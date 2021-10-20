@@ -1,0 +1,77 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron:  '0 * * * *'
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    container:
+        image: texlive/texlive
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - uses: actions/checkout@v1
+      - name: Articles
+        uses: actions/checkout@v2
+        with:
+          repository: ricosjp/Articles
+          path: Articles
+      - name: WorkRules
+        uses: actions/checkout@v2
+        with:
+          repository: ricosjp/WorkRules
+          path: WorkRules
+      - name: organization
+        uses: actions/checkout@v2
+        with:
+          repository: ricosjp/rules_organization
+          path: organization
+      - name: research
+        uses: actions/checkout@v2
+        with:
+          repository: ricosjp/rules_research
+          path: research
+      - name: make
+        run: |
+          set -x
+          apt-get update && apt-get -y install gcc
+          git clone https://github.com/wolfcw/libfaketime.git
+          cd libfaketime/src && make install
+          export LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
+          export TZ=Asia/Tokyo
+          cd - && rm -fr libfaketime
+          for d in */ ; do
+            mkdir -p ./public/$d
+            cd $d
+            FAKETIME=$(git log --date=iso --date=iso-local --pretty=format:"%ad" -1) make -j
+            find . -name '*.pdf' | xargs -I% mv % ../public/$d
+            cd -
+            for name in `ls public/$d`; do echo "<a href=./$name>$name</a><br>" >> public/$d/index.html; echo "$name" >> public/$d/list.txt; done
+          done
+
+          cp README.md ./public/
+          cd public
+          for d in $(ls -d */|sed 's/\///g'|sort); do
+            repo=$(find ../$d -name "README.md"|xargs grep ^#|head -n1|sed -e 's/#[ ]*//')
+            repo=$(echo $repo|sed -e 's/^[ ]*//')
+            echo "## " $repo >> README.md
+            for file in $(find $d -name '*.pdf'|sort); do
+              title=$(find ../$d -name "$(basename $file .pdf)*"|xargs grep \title{| sed -e "s/^.*{\(.*\)}.*$/\1/" -e 's/\\\\/ /')
+              title=$(echo $title|sed -e 's/^[ ]*//')
+              echo "- [$title]($file)" >> README.md
+            done
+            echo  >> README.md
+          done
+          echo 'theme: jekyll-theme-cayman' > _config.yml
+      - name: pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: public
+          enable_jekyll: true
+          force_orphan: true
+          cname: rules.ricos.co.jp

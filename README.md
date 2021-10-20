@@ -1,1 +1,3 @@
-# rules
+# RICOS Co. Ltd. Rules Repository
+
+
