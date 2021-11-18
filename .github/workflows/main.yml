@@ -14,7 +14,6 @@ jobs:
       run:
         working-directory: ./
     steps:
-      - uses: actions/checkout@v1
       - name: Articles
         uses: actions/checkout@v2
         with:
@@ -35,15 +34,16 @@ jobs:
         with:
           repository: ricosjp/rules_research
           path: research
-      - name: make
+      - name: libfaketime
         run: |
-          set -x
           apt-get update && apt-get -y install gcc jq
           git clone https://github.com/wolfcw/libfaketime.git
           cd libfaketime/src && make install
           export LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
           export TZ=Asia/Tokyo
           cd - && rm -fr libfaketime
+      - name: build
+        run: |
           for d in */ ; do
             mkdir -p ./public/$d
             cd $d
@@ -52,35 +52,43 @@ jobs:
             cd -
             for name in `ls public/$d`; do echo "<a href=./$name>$name</a><br>" >> public/$d/index.html; echo "$name" >> public/$d/list.txt; done
           done
-
-          cp README.md ./public/
+      - name: index
+        run: |
           cd public
           echo { >> files.json
           for d in $(ls -d */|sed 's/\///g'|sort); do
             repo=$(find ../$d -name "README.md"|xargs grep ^#|head -n1|sed -e 's/#[ ]*//')
             repo=$(echo $repo|sed -e 's/^[ ]*//')
-            echo "## " $repo     >> README.md
+            echo "## " $repo     >> index.md
             echo "$d:"           >> files.yaml
             echo "  name: $repo" >> files.yaml
+            echo "  path: $d"    >> files.yaml
             echo "  data:"       >> files.yaml
-            echo '"'$d'"': {'"'name'"':'"'$repo'"','"'data'"':{ >> files.json
+            echo '"'$d'"': {'"'name'"':'"'$repo'"','"'path'"':'"'$d'"','"'data'"':{ >> files.json
             for path in $(find $d -name '*.pdf'|sort); do
               name=$(find ../$d -name "$(basename $path .pdf)*"|xargs grep \title{| sed -e "s/^.*{\(.*\)}.*$/\1/" -e 's/\\\\/ /')
               name=$(echo $name|sed -e 's/^[ ]*//')
-              echo "- [$name]($path)"  >> README.md
+              bpath=$(basename $path)
+              echo "- [$name]($path)"  >> index.md
               echo "    $name:"        >> files.yaml
               echo "      name: $name" >> files.yaml
-              echo "      path: $path" >> files.yaml
-              echo '"'$name'"':{'"name":''"'$name'"', '"path":''"'$path'"'}, >> files.json
+              echo "      path: $bpath">> files.yaml
+              echo '"'$name'"':{'"name":''"'$name'"', '"path":''"'$bpath'"'}, >> files.json
             done
             sed -i -e '$ s/,$/}},/' files.json
-            echo >> README.md
+            echo >> index.md
           done
           sed -i -e '$ s/,$/}/' files.json
           cat files.json | jq -c > files2.json
           mv files2.json files.json
-          cp files.yaml files
-          echo 'theme: jekyll-theme-cayman' > _config.yml
+      - name: Rules
+        uses: actions/checkout@v2
+        with:
+          path: rules
+      - name: copy
+        run: |
+          cat ./public/index.md >> ./rules/index.md
+          cp -uprv ./rules/* ./public/
       - name: pages
         uses: peaceiris/actions-gh-pages@v3
         with:
