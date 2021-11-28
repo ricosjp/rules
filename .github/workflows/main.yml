@@ -1,10 +1,12 @@
-name: Deploy
+name: main
 on:
   push:
     branches:
       - main
   schedule:
-    - cron:  '0 * * * *'
+    - cron:  '0 0 * * *'
+  repository_dispatch:
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -52,6 +54,7 @@ jobs:
           for d in */ ; do
             mkdir -p ./public/$d
             cd $d
+            find . -type f |xargs sed -z "s/%CERTIFICATION.*FIELD%//" -i
             FAKETIME=$(git log --date=iso --date=iso-local --pretty=format:"%ad" -1) make -j
             find . -name '*.pdf' | xargs -I% mv % ../public/$d
             cd -
