@@ -44,11 +44,11 @@ jobs:
           apt-get update && apt-get -y install gcc jq
           git clone https://github.com/wolfcw/libfaketime.git
           cd libfaketime/src && make install
-          export LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
-          export TZ=Asia/Tokyo
           cd - && rm -fr libfaketime
       - name: build
         run: |
+          export LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
+          export TZ=Asia/Tokyo
           for d in */ ; do
             mkdir -p ./public/$d
             cd $d
