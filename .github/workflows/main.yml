@@ -6,7 +6,7 @@ on:
   repository_dispatch:
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     container:
         image: texlive/texlive
@@ -96,13 +96,21 @@ jobs:
           cat ./public/index.md >> ./rules/index.md
           cp -uprv ./rules/* ./public/
       - name: pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: public
-          enable_jekyll: true
-          force_orphan: true
-          cname: rules.ricos.co.jp
+          path: public
+  deploy:
+    needs: build
+    permissions:
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/deploy-pages@v2
+        id: deployment
   dispatch:
     runs-on: ubuntu-latest
     steps:
