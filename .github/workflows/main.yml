@@ -95,10 +95,15 @@ jobs:
         run: |
           cat ./public/index.md >> ./rules/index.md
           cp -uprv ./rules/* ./public/
+      - name: Build
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: "./public"
+          destination: "./output"
       - name: pages
         uses: actions/upload-pages-artifact@v1
         with:
-          path: public
+          path: ./output
   deploy:
     needs: build
     permissions:
