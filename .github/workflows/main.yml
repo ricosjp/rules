@@ -105,3 +105,12 @@ jobs:
           enable_jekyll: true
           force_orphan: true
           cname: rules.ricos.co.jp
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: allrules
+        run: |
+          curl -X POST https://api.github.com/repos/ricosjp/allrules/dispatches \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "authorization: token ${{ secrets.DISPATCH_TOKEN }}" \
+          --data '{"event_type":"from '$GITHUB_REPOSITORY'"}'
