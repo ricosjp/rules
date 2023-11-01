@@ -10,10 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     container:
         image: texlive/texlive
-    defaults:
-      run:
-        working-directory: ./
     steps:
+      - name: libfaketime
+        run: |
+          apt-get update && apt-get -y install gcc jq
+          git clone https://github.com/wolfcw/libfaketime.git
+          cd libfaketime/src && make install
+          cd - && rm -fr libfaketime
       - name: Articles
         uses: actions/checkout@v3
         with:
@@ -39,12 +42,6 @@ jobs:
         with:
           repository: ricosjp/rules_safety
           path: safety
-      - name: libfaketime
-        run: |
-          apt-get update && apt-get -y install gcc jq
-          git clone https://github.com/wolfcw/libfaketime.git
-          cd libfaketime/src && make install
-          cd - && rm -fr libfaketime
       - name: build
         run: |
           export LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1
@@ -95,13 +92,11 @@ jobs:
         run: |
           cat ./public/index.md >> ./rules/index.md
           cp -uprv ./rules/* ./public/
-      - name: Build
-        uses: actions/jekyll-build-pages@v1
+      - uses: actions/jekyll-build-pages@v1
         with:
           source: "./public"
           destination: "./output"
-      - name: pages
-        uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v1
         with:
           path: ./output
   deploy:
