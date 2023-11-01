@@ -15,27 +15,27 @@ jobs:
         working-directory: ./
     steps:
       - name: Articles
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ricosjp/Articles
           path: Articles
       - name: WorkRules
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ricosjp/WorkRules
           path: WorkRules
       - name: organization
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ricosjp/rules_organization
           path: organization
       - name: research
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ricosjp/rules_research
           path: research
       - name: safety
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ricosjp/rules_safety
           path: safety
@@ -88,7 +88,7 @@ jobs:
           cat files.json | jq -c > files2.json
           mv files2.json files.json
       - name: Rules
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: rules
       - name: copy
