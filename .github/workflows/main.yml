@@ -56,7 +56,7 @@ jobs:
             cd $d
             find . -type f |xargs sed -z "s/%CERTIFICATION.*FIELD%//" -i
             FAKETIME=$(git log --date=iso --date=iso-local --pretty=format:"%ad" -1) make -j
-            find . -name '*.pdf' | xargs -I% mv % ../public/$d
+            find . -name '*.pdf' -maxdepth 2 | xargs -I% mv % ../public/$d
             cd -
             for name in `ls public/$d`; do echo "<a href=./$name>$name</a><br>" >> public/$d/index.html; echo "$name" >> public/$d/list.txt; done
           done
