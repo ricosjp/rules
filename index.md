@@ -1,5 +1,5 @@
 ---
 title: '<img src="/logo.svg" height="60">'
-description: Rules repository
+description: The company rules and regulations
 ---
 

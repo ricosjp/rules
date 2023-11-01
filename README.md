@@ -1,3 +1,3 @@
-# RICOS Co. Ltd. Rules Repository
+# RICOS Co. Ltd. rules and regulations
 
 
