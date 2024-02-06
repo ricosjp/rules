@@ -114,9 +114,9 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: allrules
+      - name: regulations
         run: |
-          curl -X POST https://api.github.com/repos/ricosjp/allrules/dispatches \
+          curl -X POST https://api.github.com/repos/ricosjp/regulations/dispatches \
           -H "Accept: application/vnd.github.v3+json" \
           -H "authorization: token ${{ secrets.DISPATCH_TOKEN }}" \
           --data '{"event_type":"from '$GITHUB_REPOSITORY'"}'
