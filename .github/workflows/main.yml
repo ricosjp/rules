@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: libfaketime
         run: |
-          apt-get update && apt-get -y install gcc jq
+          apt-get update && apt-get -y install build-essential jq
           git clone https://github.com/wolfcw/libfaketime.git
           cd libfaketime/src && make install
           cd - && rm -fr libfaketime
